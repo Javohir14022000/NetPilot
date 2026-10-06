@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application>
+        <activity
+            android:name=".internal.ui.NetPilotActivity"
+            android:exported="false"
+            android:label="@string/netpilot_name"
+            android:launchMode="singleTask"
+            android:taskAffinity="dev.mobile.netpilot.task"
+            android:theme="@style/netpilot_Theme" />
+    </application>
+
+</manifest>
