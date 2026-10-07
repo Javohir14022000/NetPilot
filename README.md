@@ -29,8 +29,8 @@ Then add the real library to debug builds and the empty no-op to release builds:
 
 ```kotlin
 dependencies {
-    debugImplementation("com.github.Javohir14022000.NetPilot:netpilot:0.3.0")
-    releaseImplementation("com.github.Javohir14022000.NetPilot:netpilot-no-op:0.3.0")
+    debugImplementation("com.github.Javohir14022000.NetPilot:netpilot:0.4.0")
+    releaseImplementation("com.github.Javohir14022000.NetPilot:netpilot-no-op:0.4.0")
 }
 ```
 
@@ -130,7 +130,7 @@ The new request shows up in the list like any other. Some details:
 ```
 
 Releases: bump `netpilot.version` in `gradle.properties` and create a GitHub release whose
-tag is that version (for example `0.3.0`). JitPack builds the tag on first request.
+tag is that version (for example `0.4.0`). JitPack builds the tag on first request.
 
 ## License
 
