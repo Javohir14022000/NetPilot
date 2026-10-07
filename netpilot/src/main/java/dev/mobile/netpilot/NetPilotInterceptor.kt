@@ -4,11 +4,14 @@ import android.content.Context
 import android.util.Log
 import dev.mobile.netpilot.internal.NetPilotComponents
 import dev.mobile.netpilot.internal.TransactionListener
+import dev.mobile.netpilot.internal.capture.HeaderRedactor
+import dev.mobile.netpilot.internal.capture.RedactedHeaderStore
 import dev.mobile.netpilot.internal.capture.TransactionFactory
 import dev.mobile.netpilot.internal.data.HttpTransaction
 import dev.mobile.netpilot.internal.data.TransactionRepository
 import dev.mobile.netpilot.internal.mock.MockResponder
 import dev.mobile.netpilot.internal.mock.MockRuleMatcher
+import dev.mobile.netpilot.internal.replay.TransactionIdListener
 import okhttp3.Interceptor
 import okhttp3.Response
 import java.util.concurrent.TimeUnit
@@ -28,6 +31,7 @@ class NetPilotInterceptor internal constructor(
     private val repository: TransactionRepository,
     private val listener: TransactionListener,
     private val mocks: MockRuleMatcher = MockRuleMatcher.NONE,
+    private val redactedHeaders: RedactedHeaderStore = RedactedHeaderStore(),
     private val clock: () -> Long = System::currentTimeMillis,
 ) : Interceptor {
 
@@ -37,6 +41,7 @@ class NetPilotInterceptor internal constructor(
         repository = NetPilotComponents.repository(context, config),
         listener = NetPilotComponents.listener(context, config),
         mocks = NetPilotComponents.mockStore(context),
+        redactedHeaders = NetPilotComponents.redactedHeaders,
     )
 
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -45,6 +50,8 @@ class NetPilotInterceptor internal constructor(
         val pending = safely("capture request") {
             val started = TransactionFactory.fromRequest(request, config, clock()).copy(mockRuleName = mock?.name)
             val saved = started.copy(id = repository.insert(started))
+            redactedHeaders.put(saved.id, HeaderRedactor.originals(request.headers, config.redactHeaders))
+            request.tag(TransactionIdListener::class.java)?.onRecorded(saved.id)
             listener.onTransactionUpdated(saved)
             saved
         }

@@ -12,6 +12,16 @@
             android:launchMode="singleTask"
             android:taskAffinity="dev.mobile.netpilot.task"
             android:theme="@style/netpilot_Theme" />
+
+        <provider
+            android:name=".internal.ui.NetPilotFileProvider"
+            android:authorities="${applicationId}.netpilot.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/netpilot_file_paths" />
+        </provider>
     </application>
 
 </manifest>

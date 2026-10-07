@@ -1,8 +1,8 @@
 package dev.mobile.netpilot.internal.mock
 
-import dev.mobile.netpilot.internal.data.HttpHeader
+import dev.mobile.netpilot.internal.HttpMethods
+import dev.mobile.netpilot.internal.data.HeaderCodec
 import dev.mobile.netpilot.internal.data.HttpTransaction
-import okhttp3.Headers
 
 internal enum class DraftField { URL_PATTERN, STATUS_CODE, HEADERS, DELAY, PRIORITY }
 
@@ -33,7 +33,7 @@ internal data class MockRuleDraft(
         val status = statusCode.trim().toIntOrNull()
         val delay = delayMillis.trim().ifEmpty { "0" }.toLongOrNull()
         val parsedPriority = priority.trim().ifEmpty { "0" }.toIntOrNull()
-        val parsedHeaders = parseHeaders(headers)
+        val parsedHeaders = HeaderCodec.parseUserInput(headers)
 
         val errors = buildMap<DraftField, String> {
             when {
@@ -73,7 +73,7 @@ internal data class MockRuleDraft(
     companion object {
         const val ANY_METHOD = "ANY"
         const val MAX_DELAY_MILLIS = 60_000L
-        val METHODS = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD")
+        val METHODS = HttpMethods.ALL
         private val STATUS_RANGE = 100..599
 
         fun fromRule(rule: MockRule) = MockRuleDraft(
@@ -85,7 +85,7 @@ internal data class MockRuleDraft(
             outcome = rule.outcome,
             statusCode = rule.statusCode.toString(),
             contentType = rule.contentType.orEmpty(),
-            headers = rule.headers.joinToString("\n") { "${it.name}: ${it.value}" },
+            headers = HeaderCodec.encode(rule.headers),
             body = rule.body,
             delayMillis = rule.delayMillis.toString(),
             priority = rule.priority.toString(),
@@ -101,20 +101,5 @@ internal data class MockRuleDraft(
             contentType = transaction.responseContentType ?: MockRule.DEFAULT_CONTENT_TYPE,
             body = transaction.responseBody.orEmpty(),
         )
-
-        /** Returns `null` when any non-blank line is not a valid `Name: value` header. */
-        private fun parseHeaders(text: String): List<HttpHeader>? =
-            text.lines().filter { it.isNotBlank() }.map { line ->
-                val separator = line.indexOf(':')
-                if (separator <= 0) return null
-                val name = line.substring(0, separator).trim()
-                val value = line.substring(separator + 1).trim()
-                try {
-                    Headers.Builder().add(name, value)
-                } catch (e: IllegalArgumentException) {
-                    return null
-                }
-                HttpHeader(name, value)
-            }
     }
 }

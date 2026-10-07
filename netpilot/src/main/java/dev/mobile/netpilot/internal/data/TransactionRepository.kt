@@ -21,6 +21,9 @@ internal interface TransactionRepository {
 
     fun get(id: Long): HttpTransaction?
 
+    /** Newest first, with bodies; used for exports. */
+    fun getRecent(limit: Int): List<HttpTransaction>
+
     fun clear()
 }
 

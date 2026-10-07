@@ -2,8 +2,8 @@
 
 In-app HTTP inspector for Android: see every OkHttp request your app makes, including Retrofit and Ktor's OkHttp engine. Later stages add the ability to control that traffic.
 
-> Status: **stage 2**: capture, inspector UI and mock rules. Edit & retry, an MCP server
-> for AI tools and breakpoints are planned next.
+> Status: **stage 3**: capture, inspector UI, mock rules, edit & retry, cURL and HAR export.
+> An MCP server for AI tools and breakpoints are planned next.
 
 ## Setup
 
@@ -70,6 +70,28 @@ URL patterns:
 Rules are checked by priority (highest first). A global switch turns all mocking off.
 Mocked requests are tagged **MOCK** in the list, and the response carries an
 `X-NetPilot-Mock: <rule name>` header.
+
+## Retry, edit & retry
+
+The **⋮** menu on any request offers two ways to send it again:
+
+- **Retry** re-sends the request exactly as captured.
+- **Edit & retry** lets you change the method, URL, headers and body before sending.
+
+The new request shows up in the list like any other. Some details:
+
+- Redacted headers such as `Authorization` are stored on disk as `██`. Their real values are
+  kept **in memory only**, so a retry in the same app session still authenticates. After a
+  restart the editor asks you to type them in.
+- Retries go through NetPilot's own OkHttp client. Your app's other interceptors, such as
+  token refresh or certificate pinning, are not applied. Mock rules still apply.
+
+## Export
+
+- **Copy as cURL** / **Share as cURL**: redacted headers stay redacted.
+- **Share as text**: a readable dump of the request and response.
+- **Share as HAR** (one request) or **Export as HAR** from the list's **⋮** menu (latest 100):
+  HAR 1.2 files open in Chrome DevTools, Charles and Proxyman.
 
 ## Modules
 

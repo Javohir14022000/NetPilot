@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -27,10 +28,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -42,6 +45,9 @@ import dev.mobile.netpilot.internal.Format
 import dev.mobile.netpilot.internal.data.TransactionRepository
 import dev.mobile.netpilot.internal.data.TransactionSummary
 import dev.mobile.netpilot.internal.data.observeSummaries
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private const val BADGE_BACKGROUND_ALPHA = 0.15f
 
@@ -71,9 +77,7 @@ internal fun TransactionListScreen(
                     IconButton(onClick = onOpenMocks) {
                         Icon(painterResource(R.drawable.netpilot_ic_mock), stringResource(R.string.netpilot_mocks))
                     }
-                    IconButton(onClick = onClear) {
-                        Icon(painterResource(R.drawable.netpilot_ic_delete), stringResource(R.string.netpilot_clear))
-                    }
+                    ListActionsMenu(repository, onClear)
                 },
             )
         },
@@ -97,6 +101,30 @@ internal fun TransactionListScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ListActionsMenu(repository: TransactionRepository, onClear: () -> Unit) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var isExpanded by remember { mutableStateOf(false) }
+
+    IconButton(onClick = { isExpanded = true }) {
+        Icon(painterResource(R.drawable.netpilot_ic_more), stringResource(R.string.netpilot_more))
+    }
+    DropdownMenu(expanded = isExpanded, onDismissRequest = { isExpanded = false }) {
+        MenuItem(R.string.netpilot_export_har) {
+            isExpanded = false
+            scope.launch {
+                val recent = withContext(Dispatchers.IO) { repository.getRecent(ShareActions.HAR_EXPORT_LIMIT) }
+                ShareActions.shareHar(context, recent)
+            }
+        }
+        MenuItem(R.string.netpilot_clear) {
+            isExpanded = false
+            onClear()
         }
     }
 }

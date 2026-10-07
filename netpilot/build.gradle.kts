@@ -40,4 +40,6 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.okhttp.mockwebserver)
+    // Real org.json for HAR assertions; android.jar only ships stubs in unit tests.
+    testImplementation(libs.org.json)
 }

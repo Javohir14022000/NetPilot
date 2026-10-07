@@ -50,6 +50,11 @@ internal class SqliteTransactionRepository(
             .query(TransactionTable.NAME, null, "${TransactionTable.ID} = ?", arrayOf(id.toString()), null, null, null)
             .use { cursor -> if (cursor.moveToFirst()) cursor.toTransaction() else null }
 
+    override fun getRecent(limit: Int): List<HttpTransaction> =
+        database.readableDatabase
+            .query(TransactionTable.NAME, null, null, null, null, null, "${TransactionTable.ID} DESC", limit.toString())
+            .use { cursor -> buildList { while (cursor.moveToNext()) add(cursor.toTransaction()) } }
+
     override fun clear() {
         database.writableDatabase.delete(TransactionTable.NAME, null, null)
         notifyChanged()

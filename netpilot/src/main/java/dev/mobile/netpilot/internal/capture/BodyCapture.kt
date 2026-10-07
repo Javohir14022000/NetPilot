@@ -25,6 +25,19 @@ internal object BodyCapture {
     private const val STREAMING_NOTE = "[streaming body not captured]"
     private const val BINARY_NOTE = "[binary body not shown]"
 
+    /** Placeholder notes written instead of (or appended to) a body that was not fully captured. */
+    private val INCOMPLETE_BODY_PATTERNS = listOf(
+        Regex("^" + Regex.escape(STREAMING_NOTE) + "$"),
+        Regex("^" + Regex.escape(BINARY_NOTE) + "$"),
+        Regex("""^\[body of \d+ bytes exceeds capture limit]$"""),
+        Regex("""^\[[^\]\n]+-encoded body not shown]$"""),
+        Regex("""\n\n\[truncated: showing first \d+ bytes]$"""),
+    )
+
+    /** `false` when [text] is one of this object's placeholder notes or a truncated body. */
+    fun isCompleteBody(text: String?): Boolean =
+        text != null && INCOMPLETE_BODY_PATTERNS.none { it.containsMatchIn(text) }
+
     fun request(request: Request, maxLength: Long): CapturedBody {
         val body = request.body ?: return CapturedBody(null, 0)
         val contentLength = body.contentLength()
