@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package dev.mobile.netpilot.internal.ui
 
 import androidx.compose.foundation.layout.Arrangement
@@ -8,20 +6,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -112,22 +108,17 @@ private fun MockRuleEditorScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(if (isExisting) R.string.netpilot_edit_mock else R.string.netpilot_new_mock)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(painterResource(R.drawable.netpilot_ic_back), stringResource(R.string.netpilot_back))
+            NetPilotTopBar(
+                title = stringResource(if (isExisting) R.string.netpilot_edit_mock else R.string.netpilot_new_mock),
+                onBack = onBack,
+            ) {
+                if (isExisting) {
+                    IconButton(onClick = onDelete) {
+                        Icon(painterResource(R.drawable.netpilot_ic_delete), stringResource(R.string.netpilot_delete))
                     }
-                },
-                actions = {
-                    if (isExisting) {
-                        IconButton(onClick = onDelete) {
-                            Icon(painterResource(R.drawable.netpilot_ic_delete), stringResource(R.string.netpilot_delete))
-                        }
-                    }
-                    TextButton(onClick = save) { Text(stringResource(R.string.netpilot_save)) }
-                },
-            )
+                }
+                TextButton(onClick = save) { Text(stringResource(R.string.netpilot_save)) }
+            }
         },
     ) { padding ->
         Column(
@@ -135,49 +126,64 @@ private fun MockRuleEditorScreen(
                 .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            FormField("Name", draft.name, hint = "Optional, defaults to method + URL pattern") {
-                draft = draft.copy(name = it)
+            SectionCard("Match") {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    FormField("Name", draft.name, hint = "Optional, defaults to method + URL pattern") {
+                        draft = draft.copy(name = it)
+                    }
+                    ChoiceRow(
+                        title = "Method",
+                        options = listOf<String?>(null) + MockRuleDraft.METHODS,
+                        selected = draft.method,
+                        label = { it ?: MockRuleDraft.ANY_METHOD },
+                    ) { draft = draft.copy(method = it) }
+                    FormField(
+                        label = "URL pattern",
+                        value = draft.urlPattern,
+                        error = errors[DraftField.URL_PATTERN],
+                        hint = URL_PATTERN_HINT,
+                        keyboardType = KeyboardType.Uri,
+                        isMonospace = true,
+                    ) { draft = draft.copy(urlPattern = it) }
+                    LabeledSwitch("Regular expression", draft.isRegex, description = "Match anywhere in the full URL") {
+                        draft = draft.copy(isRegex = it)
+                    }
+                }
             }
-            ChoiceRow(
-                title = "Method",
-                options = listOf<String?>(null) + MockRuleDraft.METHODS,
-                selected = draft.method,
-                label = { it ?: MockRuleDraft.ANY_METHOD },
-            ) { draft = draft.copy(method = it) }
-            FormField(
-                label = "URL pattern",
-                value = draft.urlPattern,
-                error = errors[DraftField.URL_PATTERN],
-                hint = URL_PATTERN_HINT,
-                keyboardType = KeyboardType.Uri,
-            ) { draft = draft.copy(urlPattern = it) }
-            LabeledSwitch("Regular expression", draft.isRegex) { draft = draft.copy(isRegex = it) }
-            ChoiceRow(
-                title = "Result",
-                options = MockOutcome.entries,
-                selected = draft.outcome,
-                label = ::outcomeTitle,
-            ) { draft = draft.copy(outcome = it) }
-            if (draft.outcome == MockOutcome.RESPOND) {
-                ResponseFields(draft, errors) { draft = it }
+            SectionCard("Result") {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    ChoiceRow(
+                        title = "The app receives",
+                        options = MockOutcome.entries,
+                        selected = draft.outcome,
+                        label = ::outcomeTitle,
+                    ) { draft = draft.copy(outcome = it) }
+                    if (draft.outcome == MockOutcome.RESPOND) {
+                        ResponseFields(draft, errors) { draft = it }
+                    }
+                }
             }
-            FormField(
-                label = "Delay (ms)",
-                value = draft.delayMillis,
-                error = errors[DraftField.DELAY],
-                keyboardType = KeyboardType.Number,
-            ) { draft = draft.copy(delayMillis = it) }
-            FormField(
-                label = "Priority",
-                value = draft.priority,
-                error = errors[DraftField.PRIORITY],
-                hint = "Higher priority rules are checked first",
-                keyboardType = KeyboardType.Number,
-            ) { draft = draft.copy(priority = it) }
-            LabeledSwitch("Enabled", draft.isEnabled) { draft = draft.copy(isEnabled = it) }
+            SectionCard("Behavior") {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    FormField(
+                        label = "Delay (ms)",
+                        value = draft.delayMillis,
+                        error = errors[DraftField.DELAY],
+                        keyboardType = KeyboardType.Number,
+                    ) { draft = draft.copy(delayMillis = it) }
+                    FormField(
+                        label = "Priority",
+                        value = draft.priority,
+                        error = errors[DraftField.PRIORITY],
+                        hint = "Higher priority rules are checked first",
+                        keyboardType = KeyboardType.Number,
+                    ) { draft = draft.copy(priority = it) }
+                    LabeledSwitch("Enabled", draft.isEnabled) { draft = draft.copy(isEnabled = it) }
+                }
+            }
         }
     }
 }
@@ -193,14 +199,16 @@ private fun ResponseFields(
         value = draft.statusCode,
         error = errors[DraftField.STATUS_CODE],
         keyboardType = KeyboardType.Number,
+        isMonospace = true,
     ) { onChange(draft.copy(statusCode = it)) }
-    FormField("Content-Type", draft.contentType) { onChange(draft.copy(contentType = it)) }
+    FormField("Content-Type", draft.contentType, isMonospace = true) { onChange(draft.copy(contentType = it)) }
     FormField(
         label = "Headers",
         value = draft.headers,
         error = errors[DraftField.HEADERS],
         hint = "One per line, e.g. X-Request-Id: 42",
         minLines = MULTILINE_MIN_LINES,
+        isMonospace = true,
     ) { onChange(draft.copy(headers = it)) }
     FormField(
         label = "Body",

@@ -12,7 +12,7 @@ import java.util.TimeZone
 internal object HarFormatter {
     private const val HAR_VERSION = "1.2"
     private const val CREATOR_NAME = "NetPilot"
-    const val CREATOR_VERSION = "0.3.0"
+    const val CREATOR_VERSION = "0.4.0"
     private const val UNKNOWN_SIZE = "-1"
     private const val DEFAULT_HTTP_VERSION = "HTTP/1.1"
 

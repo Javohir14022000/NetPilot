@@ -1,16 +1,21 @@
 package dev.mobile.netpilot.internal.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+
+private const val SELECTED_BORDER_ALPHA = 0.4f
 
 /** Form building blocks shared by the mock rule and request editors. */
 @Composable
@@ -32,6 +39,7 @@ internal fun FormField(
     isMonospace: Boolean = false,
     onValueChange: (String) -> Unit,
 ) {
+    val colors = MaterialTheme.colorScheme
     val supporting = error ?: hint
     val textStyle = LocalTextStyle.current
     OutlinedTextField(
@@ -44,6 +52,13 @@ internal fun FormField(
         minLines = minLines,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         textStyle = if (isMonospace) textStyle.copy(fontFamily = FontFamily.Monospace) else textStyle,
+        shape = MaterialTheme.shapes.medium,
+        colors = OutlinedTextFieldDefaults.colors(
+            unfocusedBorderColor = colors.outlineVariant,
+            focusedBorderColor = colors.primary,
+            unfocusedContainerColor = colors.surfaceContainerLowest,
+            focusedContainerColor = colors.surfaceContainerLowest,
+        ),
         modifier = Modifier.fillMaxWidth(),
     )
 }
@@ -56,17 +71,31 @@ internal fun <T> ChoiceRow(
     label: (T) -> String,
     onSelect: (T) -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(title, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    val colors = MaterialTheme.colorScheme
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(title, style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant)
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             options.forEach { option ->
+                val isSelected = option == selected
                 FilterChip(
-                    selected = option == selected,
+                    selected = isSelected,
                     onClick = { onSelect(option) },
                     label = { Text(label(option)) },
+                    shape = MaterialTheme.shapes.small,
+                    colors = FilterChipDefaults.filterChipColors(
+                        containerColor = colors.surfaceContainerLowest,
+                        selectedContainerColor = colors.primaryContainer,
+                        selectedLabelColor = colors.onPrimaryContainer,
+                    ),
+                    border = FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = isSelected,
+                        borderColor = colors.outlineVariant,
+                        selectedBorderColor = colors.primary.copy(alpha = SELECTED_BORDER_ALPHA),
+                    ),
                 )
             }
         }
@@ -74,18 +103,32 @@ internal fun <T> ChoiceRow(
 }
 
 @Composable
-internal fun LabeledSwitch(label: String, isChecked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+internal fun LabeledSwitch(label: String, isChecked: Boolean, description: String? = null, onCheckedChange: (Boolean) -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(label, Modifier.weight(1f))
+        Column(Modifier.weight(1f)) {
+            Text(label, style = MaterialTheme.typography.bodyMedium)
+            if (description != null) {
+                Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
         Switch(checked = isChecked, onCheckedChange = onCheckedChange)
     }
 }
 
+/** Tinted callout: informational by default, red for errors. */
 @Composable
 internal fun Notice(text: String, isError: Boolean = false) {
+    val palette = LocalStatusPalette.current
+    val tone = if (isError) palette.serverError else palette.redirect
+    val shape = MaterialTheme.shapes.medium
     Text(
         text = text,
         style = MaterialTheme.typography.bodySmall,
-        color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+        color = tone.content,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(tone.container, shape)
+            .border(1.dp, tone.border, shape)
+            .padding(12.dp),
     )
 }

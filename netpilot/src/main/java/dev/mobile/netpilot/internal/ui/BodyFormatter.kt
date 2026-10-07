@@ -8,6 +8,12 @@ import org.json.JSONObject
 internal object BodyFormatter {
     private const val JSON_INDENT = 2
 
+    /** True when [body] is shown as JSON and can be syntax-highlighted. */
+    fun isJson(body: String?, contentType: String?): Boolean {
+        val trimmed = body?.trim() ?: return false
+        return trimmed.startsWith("{") || trimmed.startsWith("[") || contentType?.contains("json", ignoreCase = true) == true
+    }
+
     fun format(body: String?, contentType: String?): String? {
         if (body.isNullOrEmpty()) return null
         val trimmed = body.trim()
