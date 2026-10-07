@@ -1,4 +1,5 @@
 plugins {
+    `maven-publish`
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
 }
@@ -12,7 +13,17 @@ android {
 
     defaultConfig {
         minSdk = 24
+        // AGP 9 would otherwise require host apps to use compileSdk 37 like this module.
+        aarMetadata {
+            minCompileSdk = 34
+        }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
     }
 
     compileOptions {
@@ -30,16 +41,28 @@ android {
 dependencies {
     api(libs.okhttp)
 
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.lib.compose.bom))
+    implementation(libs.lib.activity.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.lib.core.ktx)
+    implementation(libs.lib.lifecycle.runtime.ktx)
     implementation(libs.kotlinx.coroutines.android)
 
     testImplementation(libs.junit)
     testImplementation(libs.okhttp.mockwebserver)
     // Real org.json for HAR assertions; android.jar only ships stubs in unit tests.
     testImplementation(libs.org.json)
+}
+
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            groupId = providers.gradleProperty("netpilot.group").get()
+            artifactId = "netpilot"
+            version = providers.gradleProperty("netpilot.version").get()
+            // The "release" software component only exists after the Android plugin configures it.
+            afterEvaluate { from(components["release"]) }
+        }
+    }
 }
