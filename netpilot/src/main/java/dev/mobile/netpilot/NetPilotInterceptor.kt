@@ -7,6 +7,8 @@ import dev.mobile.netpilot.internal.TransactionListener
 import dev.mobile.netpilot.internal.capture.TransactionFactory
 import dev.mobile.netpilot.internal.data.HttpTransaction
 import dev.mobile.netpilot.internal.data.TransactionRepository
+import dev.mobile.netpilot.internal.mock.MockResponder
+import dev.mobile.netpilot.internal.mock.MockRuleMatcher
 import okhttp3.Interceptor
 import okhttp3.Response
 import java.util.concurrent.TimeUnit
@@ -25,6 +27,7 @@ class NetPilotInterceptor internal constructor(
     private val config: NetPilotConfig,
     private val repository: TransactionRepository,
     private val listener: TransactionListener,
+    private val mocks: MockRuleMatcher = MockRuleMatcher.NONE,
     private val clock: () -> Long = System::currentTimeMillis,
 ) : Interceptor {
 
@@ -33,12 +36,14 @@ class NetPilotInterceptor internal constructor(
         config = config,
         repository = NetPilotComponents.repository(context, config),
         listener = NetPilotComponents.listener(context, config),
+        mocks = NetPilotComponents.mockStore(context),
     )
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
+        val mock = safely("match mock rules") { mocks.findMatch(request) }
         val pending = safely("capture request") {
-            val started = TransactionFactory.fromRequest(request, config, clock())
+            val started = TransactionFactory.fromRequest(request, config, clock()).copy(mockRuleName = mock?.name)
             val saved = started.copy(id = repository.insert(started))
             listener.onTransactionUpdated(saved)
             saved
@@ -46,7 +51,7 @@ class NetPilotInterceptor internal constructor(
         val startNanos = System.nanoTime()
 
         val response = try {
-            chain.proceed(request)
+            if (mock != null) MockResponder.respond(chain, mock) else chain.proceed(request)
         } catch (e: Exception) {
             pending?.let { record(it.copy(tookMs = elapsedMillis(startNanos), error = e.toString())) }
             throw e

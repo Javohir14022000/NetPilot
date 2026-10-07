@@ -6,6 +6,7 @@
     <application>
         <activity
             android:name=".internal.ui.NetPilotActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|uiMode"
             android:exported="false"
             android:label="@string/netpilot_name"
             android:launchMode="singleTask"

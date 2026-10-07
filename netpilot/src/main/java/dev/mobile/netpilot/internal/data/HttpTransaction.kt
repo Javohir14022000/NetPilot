@@ -27,6 +27,8 @@ internal data class HttpTransaction(
     val responseBody: String? = null,
     val tookMs: Long? = null,
     val error: String? = null,
+    /** Name of the mock rule that produced the response, or `null` for real traffic. */
+    val mockRuleName: String? = null,
 ) {
     val status: TransactionStatus
         get() = transactionStatus(error, responseCode)
@@ -43,6 +45,7 @@ internal data class TransactionSummary(
     val responseSize: Long?,
     val tookMs: Long?,
     val error: String?,
+    val mockRuleName: String?,
 ) {
     val status: TransactionStatus
         get() = transactionStatus(error, responseCode)

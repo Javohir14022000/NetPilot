@@ -5,6 +5,8 @@ import dev.mobile.netpilot.NetPilotConfig
 import dev.mobile.netpilot.internal.data.HttpTransaction
 import dev.mobile.netpilot.internal.data.SqliteTransactionRepository
 import dev.mobile.netpilot.internal.data.TransactionRepository
+import dev.mobile.netpilot.internal.mock.MockRuleStore
+import dev.mobile.netpilot.internal.mock.SqliteMockRuleStore
 import dev.mobile.netpilot.internal.notification.LauncherShortcut
 import dev.mobile.netpilot.internal.notification.TransactionNotifier
 import java.util.concurrent.atomic.AtomicBoolean
@@ -27,6 +29,14 @@ internal object NetPilotComponents {
 
     @Volatile
     private var notifier: TransactionNotifier? = null
+
+    @Volatile
+    private var mockStore: MockRuleStore? = null
+
+    fun mockStore(context: Context): MockRuleStore =
+        mockStore ?: synchronized(lock) {
+            mockStore ?: SqliteMockRuleStore(context.applicationContext).also { mockStore = it }
+        }
 
     fun repository(context: Context, config: NetPilotConfig = NetPilotConfig()): TransactionRepository =
         repository ?: synchronized(lock) {

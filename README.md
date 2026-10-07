@@ -2,8 +2,8 @@
 
 In-app HTTP inspector for Android: see every OkHttp request your app makes, including Retrofit and Ktor's OkHttp engine. Later stages add the ability to control that traffic.
 
-> Status: **stage 1** — capture, storage and inspector UI. Mock rules, breakpoints,
-> edit & retry and an MCP server for AI tools are planned next.
+> Status: **stage 2**: capture, inspector UI and mock rules. Edit & retry, an MCP server
+> for AI tools and breakpoints are planned next.
 
 ## Setup
 
@@ -44,6 +44,32 @@ NetPilotInterceptor(
 
 `Authorization`, `Proxy-Authorization`, `Cookie` and `Set-Cookie` are redacted **by default**,
 before anything is written to disk.
+
+## Mock rules
+
+Open NetPilot and tap the `{ }` icon. You can also open any captured request and choose
+**Mock this response**, which prefills a rule from the real response.
+
+A matching rule answers **without touching the network**. It can do one of three things:
+
+- **Respond** with a custom status code, Content-Type, headers and body.
+- **No internet**: throws `UnknownHostException`.
+- **Timeout**: throws `SocketTimeoutException`.
+
+Any rule can also add a delay first.
+
+URL patterns:
+
+| Pattern | Matches |
+|---|---|
+| `*/posts/*` | any URL with a `/posts/` segment |
+| `/users/1` | URLs ending in `/users/1`; patterns without a scheme get an implicit leading `*` |
+| `*/search?q=*` | the query is compared only when the pattern contains `?` |
+| `posts/\d+` (regex on) | regex matched anywhere in the full URL |
+
+Rules are checked by priority (highest first). A global switch turns all mocking off.
+Mocked requests are tagged **MOCK** in the list, and the response carries an
+`X-NetPilot-Mock: <rule name>` header.
 
 ## Modules
 

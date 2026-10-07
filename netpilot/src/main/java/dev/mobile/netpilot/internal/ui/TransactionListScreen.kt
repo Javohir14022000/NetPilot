@@ -50,6 +50,7 @@ private const val BADGE_BACKGROUND_ALPHA = 0.15f
 internal fun TransactionListScreen(
     repository: TransactionRepository,
     onOpen: (Long) -> Unit,
+    onOpenMocks: () -> Unit,
     onBack: () -> Unit,
     onClear: () -> Unit,
 ) {
@@ -67,6 +68,9 @@ internal fun TransactionListScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onOpenMocks) {
+                        Icon(painterResource(R.drawable.netpilot_ic_mock), stringResource(R.string.netpilot_mocks))
+                    }
                     IconButton(onClick = onClear) {
                         Icon(painterResource(R.drawable.netpilot_ic_delete), stringResource(R.string.netpilot_clear))
                     }
@@ -104,7 +108,17 @@ private fun TransactionRow(summary: TransactionSummary, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        StatusBadge(summary)
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            StatusBadge(summary)
+            if (summary.mockRuleName != null) {
+                Text(
+                    text = stringResource(R.string.netpilot_mock_tag),
+                    color = MaterialTheme.colorScheme.tertiary,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
         Column(Modifier.weight(1f)) {
             Text(
                 text = "${summary.method} ${summary.path}",
