@@ -7,10 +7,30 @@ In-app HTTP inspector for Android: see every OkHttp request your app makes, incl
 
 ## Setup
 
+[![](https://jitpack.io/v/Javohir14022000/NetPilot.svg)](https://jitpack.io/#Javohir14022000/NetPilot)
+
+Requirements: minSdk 24, compileSdk 34+, OkHttp 4.12+.
+
+Add JitPack in `settings.gradle.kts`:
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven("https://jitpack.io") {
+            content { includeGroup("com.github.Javohir14022000.NetPilot") }
+        }
+    }
+}
+```
+
+Then add the real library to debug builds and the empty no-op to release builds:
+
 ```kotlin
 dependencies {
-    debugImplementation(project(":netpilot"))
-    releaseImplementation(project(":netpilot-no-op"))
+    debugImplementation("com.github.Javohir14022000.NetPilot:netpilot:0.3.0")
+    releaseImplementation("com.github.Javohir14022000.NetPilot:netpilot-no-op:0.3.0")
 }
 ```
 
@@ -106,4 +126,26 @@ The new request shows up in the list like any other. Some details:
 ```bash
 ./gradlew :netpilot:testDebugUnitTest
 ./gradlew :app:assembleDebug
+./gradlew publishToMavenLocal   # dev.mobile:netpilot:<version> for local testing in other apps
+```
+
+Releases: bump `netpilot.version` in `gradle.properties` and create a GitHub release whose
+tag is that version (for example `0.3.0`). JitPack builds the tag on first request.
+
+## License
+
+```
+Copyright 2026 Javohir Rahmatullayev
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 ```

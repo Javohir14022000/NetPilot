@@ -1,0 +1,6 @@
+# JitPack builds a git tag and serves the libraries as
+# com.github.Javohir14022000.NetPilot:<module>:<tag>
+jdk:
+  - openjdk21
+install:
+  - ./gradlew :netpilot:publishToMavenLocal :netpilot-no-op:publishToMavenLocal -Pnetpilot.group=com.github.Javohir14022000.NetPilot -Pnetpilot.version=$VERSION
