@@ -65,6 +65,7 @@ internal fun TransactionDetailScreen(
     id: Long,
     onBack: () -> Unit,
     onShare: (HttpTransaction) -> Unit,
+    onCreateMock: () -> Unit,
 ) {
     val state by produceState<DetailState>(DetailState.Loading, id) {
         repository.observe(id).collect { value = DetailState.Loaded(it) }
@@ -88,6 +89,11 @@ internal fun TransactionDetailScreen(
                     }
                 },
                 actions = {
+                    if (transaction?.responseCode != null) {
+                        IconButton(onClick = onCreateMock) {
+                            Icon(painterResource(R.drawable.netpilot_ic_mock), stringResource(R.string.netpilot_create_mock))
+                        }
+                    }
                     if (transaction != null) {
                         IconButton(onClick = { onShare(transaction) }) {
                             Icon(painterResource(R.drawable.netpilot_ic_share), stringResource(R.string.netpilot_share))
@@ -146,6 +152,7 @@ private fun OverviewTab(transaction: HttpTransaction) {
             "Protocol" to protocol,
             "Status" to responseCode?.let { "$it ${responseMessage.orEmpty()}".trimEnd() },
             "Error" to error,
+            "Mocked by" to mockRuleName,
             "Request time" to Format.dateTime(requestDate),
             "Response time" to responseDate?.let(Format::dateTime),
             "Duration" to Format.duration(tookMs),

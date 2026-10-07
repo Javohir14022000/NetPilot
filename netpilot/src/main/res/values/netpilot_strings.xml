@@ -17,4 +17,15 @@
     <string name="netpilot_no_body">(no body)</string>
     <string name="netpilot_in_progress">Waiting for response…</string>
     <string name="netpilot_not_found">Request no longer exists</string>
+    <string name="netpilot_mocks">Mock rules</string>
+    <string name="netpilot_add_mock">Add mock rule</string>
+    <string name="netpilot_create_mock">Mock this response</string>
+    <string name="netpilot_new_mock">New mock rule</string>
+    <string name="netpilot_edit_mock">Edit mock rule</string>
+    <string name="netpilot_save">Save</string>
+    <string name="netpilot_delete">Delete</string>
+    <string name="netpilot_mocking_enabled">Mocking enabled</string>
+    <string name="netpilot_mocking_enabled_hint">When off, every request goes to the real network</string>
+    <string name="netpilot_mocks_empty">No mock rules yet. Tap + or open a request and choose "Mock this response".</string>
+    <string name="netpilot_mock_tag">MOCK</string>
 </resources>
