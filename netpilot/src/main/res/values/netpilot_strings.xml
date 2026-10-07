@@ -7,7 +7,6 @@
     <string name="netpilot_search_hint">Filter by URL, method or status</string>
     <string name="netpilot_clear">Clear</string>
     <string name="netpilot_back">Back</string>
-    <string name="netpilot_empty">No requests captured yet</string>
     <string name="netpilot_tab_overview">Overview</string>
     <string name="netpilot_tab_request">Request</string>
     <string name="netpilot_tab_response">Response</string>
@@ -42,4 +41,16 @@
     <string name="netpilot_secrets_restored">Redacted headers (██) will be sent with their original values.</string>
     <string name="netpilot_secrets_missing">Redacted headers (██) are no longer in memory. Enter the real values before sending.</string>
     <string name="netpilot_body_missing">The original body was binary, streamed or truncated, so it is not prefilled.</string>
+    <string name="netpilot_empty_title">No requests yet</string>
+    <string name="netpilot_empty_hint">Requests your app makes will appear here instantly.</string>
+    <string name="netpilot_no_matches_title">Nothing matches</string>
+    <string name="netpilot_no_matches_hint">Try another search term or filter.</string>
+    <string name="netpilot_stats_requests">%1$d requests</string>
+    <string name="netpilot_stats_errors">%1$d errors</string>
+    <string name="netpilot_stats_average">avg %1$s</string>
+    <string name="netpilot_clear_search">Clear search</string>
+    <string name="netpilot_copy_body">Copy body</string>
+    <string name="netpilot_new_rule">New rule</string>
+    <string name="netpilot_mocks_active">%1$d of %2$d active</string>
+    <string name="netpilot_mocks_empty_title">No mock rules yet</string>
 </resources>

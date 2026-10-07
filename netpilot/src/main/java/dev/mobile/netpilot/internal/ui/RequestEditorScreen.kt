@@ -9,21 +9,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -108,21 +104,13 @@ private fun RequestEditorScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.netpilot_edit_retry)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(painterResource(R.drawable.netpilot_ic_back), stringResource(R.string.netpilot_back))
-                    }
-                },
-                actions = {
-                    if (isSending) {
-                        CircularProgressIndicator(Modifier.padding(horizontal = 16.dp).size(24.dp))
-                    } else {
-                        TextButton(onClick = send) { Text(stringResource(R.string.netpilot_send)) }
-                    }
-                },
-            )
+            NetPilotTopBar(title = stringResource(R.string.netpilot_edit_retry), onBack = onBack) {
+                if (isSending) {
+                    CircularProgressIndicator(Modifier.padding(horizontal = 16.dp).size(24.dp), strokeWidth = 2.dp)
+                } else {
+                    TextButton(onClick = send) { Text(stringResource(R.string.netpilot_send)) }
+                }
+            }
         },
     ) { padding ->
         Column(
@@ -130,7 +118,7 @@ private fun RequestEditorScreen(
                 .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             if (NetPilotConfig.REDACTED_VALUE in draft.headers) {
@@ -140,34 +128,42 @@ private fun RequestEditorScreen(
             if (draft.isOriginalBodyMissing) Notice(stringResource(R.string.netpilot_body_missing))
             sendError?.let { Notice(stringResource(R.string.netpilot_retry_failed, it), isError = true) }
 
-            ChoiceRow(
-                title = "Method",
-                options = HttpMethods.ALL,
-                selected = draft.method.uppercase(),
-                label = { it },
-            ) { draft = draft.copy(method = it) }
-            FormField(
-                label = "URL",
-                value = draft.url,
-                error = errors[RequestField.URL],
-                keyboardType = KeyboardType.Uri,
-                minLines = URL_MIN_LINES,
-            ) { draft = draft.copy(url = it) }
-            FormField(
-                label = "Headers",
-                value = draft.headers,
-                error = errors[RequestField.HEADERS],
-                hint = "One per line, e.g. Accept: application/json",
-                minLines = HEADERS_MIN_LINES,
-                isMonospace = true,
-            ) { draft = draft.copy(headers = it) }
-            FormField(
-                label = "Body",
-                value = draft.body,
-                error = errors[RequestField.BODY],
-                minLines = BODY_MIN_LINES,
-                isMonospace = true,
-            ) { draft = draft.copy(body = it) }
+            SectionCard("Request") {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    ChoiceRow(
+                        title = "Method",
+                        options = HttpMethods.ALL,
+                        selected = draft.method.uppercase(),
+                        label = { it },
+                    ) { draft = draft.copy(method = it) }
+                    FormField(
+                        label = "URL",
+                        value = draft.url,
+                        error = errors[RequestField.URL],
+                        keyboardType = KeyboardType.Uri,
+                        minLines = URL_MIN_LINES,
+                        isMonospace = true,
+                    ) { draft = draft.copy(url = it) }
+                }
+            }
+            SectionCard("Headers") {
+                FormField(
+                    label = "Name: value per line",
+                    value = draft.headers,
+                    error = errors[RequestField.HEADERS],
+                    minLines = HEADERS_MIN_LINES,
+                    isMonospace = true,
+                ) { draft = draft.copy(headers = it) }
+            }
+            SectionCard("Body") {
+                FormField(
+                    label = "Body",
+                    value = draft.body,
+                    error = errors[RequestField.BODY],
+                    minLines = BODY_MIN_LINES,
+                    isMonospace = true,
+                ) { draft = draft.copy(body = it) }
+            }
         }
     }
 }
