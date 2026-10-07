@@ -10,7 +10,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -22,11 +25,14 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -38,11 +44,14 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import dev.mobile.netpilot.R
 import dev.mobile.netpilot.internal.Format
+import dev.mobile.netpilot.internal.TransactionText
+import dev.mobile.netpilot.internal.export.CurlFormatter
 import dev.mobile.netpilot.internal.data.HttpHeader
 import dev.mobile.netpilot.internal.data.HttpTransaction
 import dev.mobile.netpilot.internal.data.TransactionRepository
 import dev.mobile.netpilot.internal.data.TransactionStatus
 import dev.mobile.netpilot.internal.data.observe
+import kotlinx.coroutines.launch
 
 /** Long bodies are rendered in chunks so the lazy list does not lay out one giant Text. */
 private const val BODY_LINES_PER_ITEM = 100
@@ -64,7 +73,8 @@ internal fun TransactionDetailScreen(
     repository: TransactionRepository,
     id: Long,
     onBack: () -> Unit,
-    onShare: (HttpTransaction) -> Unit,
+    onRetry: () -> Unit,
+    onEditRetry: () -> Unit,
     onCreateMock: () -> Unit,
 ) {
     val state by produceState<DetailState>(DetailState.Loading, id) {
@@ -89,15 +99,8 @@ internal fun TransactionDetailScreen(
                     }
                 },
                 actions = {
-                    if (transaction?.responseCode != null) {
-                        IconButton(onClick = onCreateMock) {
-                            Icon(painterResource(R.drawable.netpilot_ic_mock), stringResource(R.string.netpilot_create_mock))
-                        }
-                    }
                     if (transaction != null) {
-                        IconButton(onClick = { onShare(transaction) }) {
-                            Icon(painterResource(R.drawable.netpilot_ic_share), stringResource(R.string.netpilot_share))
-                        }
+                        DetailActionsMenu(transaction, onRetry, onEditRetry, onCreateMock)
                     }
                 },
             )
@@ -120,6 +123,62 @@ internal fun TransactionDetailScreen(
             }
         }
     }
+}
+
+@Composable
+private fun DetailActionsMenu(
+    transaction: HttpTransaction,
+    onRetry: () -> Unit,
+    onEditRetry: () -> Unit,
+    onCreateMock: () -> Unit,
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var isExpanded by remember { mutableStateOf(false) }
+    val subject = "${transaction.method} ${transaction.url}"
+    val runAndClose: (() -> Unit) -> Unit = { action ->
+        isExpanded = false
+        action()
+    }
+
+    IconButton(onClick = { isExpanded = true }) {
+        Icon(painterResource(R.drawable.netpilot_ic_more), stringResource(R.string.netpilot_more))
+    }
+    DropdownMenu(expanded = isExpanded, onDismissRequest = { isExpanded = false }) {
+        MenuItem(R.string.netpilot_retry, isEnabled = transaction.status != TransactionStatus.IN_PROGRESS) {
+            runAndClose(onRetry)
+        }
+        MenuItem(R.string.netpilot_edit_retry) { runAndClose(onEditRetry) }
+        if (transaction.responseCode != null) {
+            MenuItem(R.string.netpilot_create_mock) { runAndClose(onCreateMock) }
+        }
+        HorizontalDivider()
+        MenuItem(R.string.netpilot_copy_curl) {
+            runAndClose { ShareActions.copyToClipboard(context, "cURL", CurlFormatter.format(transaction)) }
+        }
+        MenuItem(R.string.netpilot_share_text) {
+            runAndClose {
+                scope.launch {
+                    ShareActions.shareText(context, subject, TransactionText.format(transaction), "netpilot-request.txt")
+                }
+            }
+        }
+        MenuItem(R.string.netpilot_share_curl) {
+            runAndClose {
+                scope.launch {
+                    ShareActions.shareText(context, subject, CurlFormatter.format(transaction), "netpilot-request.sh")
+                }
+            }
+        }
+        MenuItem(R.string.netpilot_share_har) {
+            runAndClose { scope.launch { ShareActions.shareHar(context, listOf(transaction)) } }
+        }
+    }
+}
+
+@Composable
+internal fun MenuItem(@StringRes label: Int, isEnabled: Boolean = true, onClick: () -> Unit) {
+    DropdownMenuItem(text = { Text(stringResource(label)) }, onClick = onClick, enabled = isEnabled)
 }
 
 @Composable

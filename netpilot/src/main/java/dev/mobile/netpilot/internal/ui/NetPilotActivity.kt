@@ -8,8 +8,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
 import dev.mobile.netpilot.internal.NetPilotComponents
-import dev.mobile.netpilot.internal.TransactionText
-import dev.mobile.netpilot.internal.data.HttpTransaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -20,14 +18,16 @@ internal class NetPilotActivity : ComponentActivity() {
         enableEdgeToEdge()
         val repository = NetPilotComponents.repository(this)
         val mockStore = NetPilotComponents.mockStore(this)
+        val replayer = NetPilotComponents.replayer(this)
         setContent {
             NetPilotTheme {
                 NetPilotApp(
                     repository = repository,
                     mockStore = mockStore,
+                    replayer = replayer,
+                    redactedHeaders = NetPilotComponents.redactedHeaders,
                     onClose = ::finish,
                     onClear = ::clearAll,
-                    onShare = ::share,
                 )
             }
         }
@@ -36,14 +36,6 @@ internal class NetPilotActivity : ComponentActivity() {
     private fun clearAll() {
         val appContext = applicationContext
         lifecycleScope.launch(Dispatchers.IO) { NetPilotComponents.clear(appContext) }
-    }
-
-    private fun share(transaction: HttpTransaction) {
-        val send = Intent(Intent.ACTION_SEND)
-            .setType("text/plain")
-            .putExtra(Intent.EXTRA_SUBJECT, "${transaction.method} ${transaction.url}")
-            .putExtra(Intent.EXTRA_TEXT, TransactionText.format(transaction))
-        startActivity(Intent.createChooser(send, null))
     }
 
     companion object {

@@ -26,6 +26,8 @@ internal class FakeTransactionRepository : TransactionRepository {
 
     override fun get(id: Long): HttpTransaction? = stored[id]
 
+    override fun getRecent(limit: Int): List<HttpTransaction> = stored.values.reversed().take(limit)
+
     override fun clear() = stored.clear()
 
     fun single(): HttpTransaction = stored.values.single()

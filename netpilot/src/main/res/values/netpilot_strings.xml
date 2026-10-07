@@ -7,7 +7,6 @@
     <string name="netpilot_search_hint">Filter by URL, method or status</string>
     <string name="netpilot_clear">Clear</string>
     <string name="netpilot_back">Back</string>
-    <string name="netpilot_share">Share</string>
     <string name="netpilot_empty">No requests captured yet</string>
     <string name="netpilot_tab_overview">Overview</string>
     <string name="netpilot_tab_request">Request</string>
@@ -28,4 +27,19 @@
     <string name="netpilot_mocking_enabled_hint">When off, every request goes to the real network</string>
     <string name="netpilot_mocks_empty">No mock rules yet. Tap + or open a request and choose "Mock this response".</string>
     <string name="netpilot_mock_tag">MOCK</string>
+    <string name="netpilot_more">More</string>
+    <string name="netpilot_retry">Retry</string>
+    <string name="netpilot_edit_retry">Edit &amp; retry</string>
+    <string name="netpilot_send">Send</string>
+    <string name="netpilot_copy_curl">Copy as cURL</string>
+    <string name="netpilot_share_text">Share as text</string>
+    <string name="netpilot_share_curl">Share as cURL</string>
+    <string name="netpilot_share_har">Share as HAR</string>
+    <string name="netpilot_export_har">Export as HAR</string>
+    <string name="netpilot_copied">Copied</string>
+    <string name="netpilot_export_failed">Export failed</string>
+    <string name="netpilot_retry_failed">Retry failed: %1$s</string>
+    <string name="netpilot_secrets_restored">Redacted headers (██) will be sent with their original values.</string>
+    <string name="netpilot_secrets_missing">Redacted headers (██) are no longer in memory. Enter the real values before sending.</string>
+    <string name="netpilot_body_missing">The original body was binary, streamed or truncated, so it is not prefilled.</string>
 </resources>

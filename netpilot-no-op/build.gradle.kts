@@ -1,4 +1,5 @@
 plugins {
+    `maven-publish`
     alias(libs.plugins.android.library)
 }
 
@@ -10,6 +11,16 @@ android {
 
     defaultConfig {
         minSdk = 24
+        // AGP 9 would otherwise require host apps to use compileSdk 37 like this module.
+        aarMetadata {
+            minCompileSdk = 34
+        }
+    }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
     }
 
     compileOptions {
@@ -20,4 +31,16 @@ android {
 
 dependencies {
     api(libs.okhttp)
+}
+
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            groupId = providers.gradleProperty("netpilot.group").get()
+            artifactId = "netpilot-no-op"
+            version = providers.gradleProperty("netpilot.version").get()
+            // The "release" software component only exists after the Android plugin configures it.
+            afterEvaluate { from(components["release"]) }
+        }
+    }
 }

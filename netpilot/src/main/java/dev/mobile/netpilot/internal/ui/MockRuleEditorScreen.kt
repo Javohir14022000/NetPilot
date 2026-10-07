@@ -2,25 +2,16 @@
 
 package dev.mobile.netpilot.internal.ui
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -31,11 +22,9 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import dev.mobile.netpilot.R
@@ -219,64 +208,4 @@ private fun ResponseFields(
         minLines = BODY_MIN_LINES,
         isMonospace = true,
     ) { onChange(draft.copy(body = it)) }
-}
-
-@Composable
-private fun FormField(
-    label: String,
-    value: String,
-    error: String? = null,
-    hint: String? = null,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    minLines: Int = 1,
-    isMonospace: Boolean = false,
-    onValueChange: (String) -> Unit,
-) {
-    val supporting = error ?: hint
-    val textStyle = LocalTextStyle.current
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        isError = error != null,
-        supportingText = supporting?.let { text -> { Text(text) } },
-        singleLine = minLines == 1,
-        minLines = minLines,
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        textStyle = if (isMonospace) textStyle.copy(fontFamily = FontFamily.Monospace) else textStyle,
-        modifier = Modifier.fillMaxWidth(),
-    )
-}
-
-@Composable
-private fun <T> ChoiceRow(
-    title: String,
-    options: List<T>,
-    selected: T,
-    label: (T) -> String,
-    onSelect: (T) -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(title, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Row(
-            modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            options.forEach { option ->
-                FilterChip(
-                    selected = option == selected,
-                    onClick = { onSelect(option) },
-                    label = { Text(label(option)) },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun LabeledSwitch(label: String, isChecked: Boolean, onCheckedChange: (Boolean) -> Unit) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(label, Modifier.weight(1f))
-        Switch(checked = isChecked, onCheckedChange = onCheckedChange)
-    }
 }

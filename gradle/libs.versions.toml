@@ -12,6 +12,12 @@ okhttp = "4.12.0"
 retrofit = "2.11.0"
 ktor = "3.4.0"
 coroutines = "1.10.2"
+orgJson = "20240303"
+# The netpilot library compiles against older AndroidX so host apps are not forced to upgrade.
+libComposeBom = "2024.09.00"
+libActivityCompose = "1.9.2"
+libCoreKtx = "1.13.1"
+libLifecycle = "2.8.6"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,6 +40,11 @@ retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = 
 retrofit-converter-scalars = { group = "com.squareup.retrofit2", name = "converter-scalars", version.ref = "retrofit" }
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
+lib-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "libComposeBom" }
+lib-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "libActivityCompose" }
+lib-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "libCoreKtx" }
+lib-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "libLifecycle" }
+org-json = { group = "org.json", name = "json", version.ref = "orgJson" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 
 [plugins]
